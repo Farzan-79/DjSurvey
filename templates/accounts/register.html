@@ -1,0 +1,15 @@
+{% extends 'base.html' %}
+
+{% block content %}
+{% if request.user.is_authenticated %}
+    <h3>you are already logged in</h3>
+    <a href="{% url 'home' %}">return home</a>
+    <a href="{% url 'accounts:logout' %}">log out</a>
+{% else %}
+    <form method="POST">
+        {% csrf_token %}
+        {{ form.as_p }}
+        <button type="submit">Sign Up</button>
+    </form>
+{% endif %}
+{% endblock content %}

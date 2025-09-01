@@ -28,7 +28,7 @@ class Answer(models.Model):
     text_answer = models.TextField(null=True, blank=True)
 
     def __str__(self):
-        return f'Answer for \"{self.question.title}\" by \"{self.user}\"'
+        return f'Answer for \"{self.question.title}\" by \"{self.user}\" : {[self.choice.title if self.choice else self.text_answer]}'
     
 
 

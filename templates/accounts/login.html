@@ -1,18 +1,34 @@
 {% extends 'base.html' %}
 
 {% block content %}
-{% if request.user.is_authenticated %}
-    <h3>you are already logged in</h3>
-    <a href="{% url 'home' %}">return home</a>
-    <a href="{% url 'accounts:logout' %}">log out</a>
-{% else %}
+
+    {% if messages %}
+        {% for message in messages %}
+            <div class="alert 
+            {% if message.tags == 'success' %} alert-success
+            {% elif message.tags == 'error' %} alert-danger
+            {% elif message.tags == 'info' %} alert-info
+            {% elif message.tags == 'warning' %} alert-warning
+            {% else %} alert-secondary {% endif %}
+            alert-dismissible fade show" role="alert">
+                {{ message }} 
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+        {% endfor %}
+    {% endif %}
+
     <form action="." method="post">
         {% csrf_token %}
         {{form.as_p}}
+        <!-- this if below, is to get the ?next parameter, and also pass it when there is no GET but POST, so the view always knows where to redirect -->
+        {% if request.GET.next %}
+            <input type="hidden" name="next" value="{{ request.GET.next }}">
+        {% endif %}
+        <!-- maybe there is a better practice? will find out -->
         <button class="btn btn-primary" type="submit">Log In</button>
     </form>
     dont have an account? <a href="{% url 'accounts:register' %}">SING UP</a>
-{% endif %}
+
 
 
 {% endblock content %}

@@ -18,18 +18,26 @@ def register_view(request):
     return render(request, 'accounts/register.html', context)
 
 def login_view(request):
+    if request.user.is_authenticated:
+        messages.info(request, f'You are already logged in, {request.user.username}!')
+        return redirect(reverse('accounts:profile'))
     context = {}
+    next_url = request.GET.get('next') or request.POST.get('next') # for getting the ?next anytime
     if request.method == 'POST':
         form = AuthenticationForm(request, data= request.POST)
         if form.is_valid():
             user = form.get_user()
             login(request, user)
+            if next_url:
+                return redirect(next_url)
             return redirect(reverse('accounts:profile'))
         else:
             context['form'] = form
     else:
         form = AuthenticationForm(request)
         context['form'] = form
+        if 'next' in request.GET:
+            messages.info(request, 'You need to be logged in in order to create a survey')
     return render(request, 'accounts/login.html', context)
 
 def logout_view(request):

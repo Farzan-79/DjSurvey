@@ -44,12 +44,15 @@ def logout_view(request):
     if request.method == 'POST':
         logout(request)
         return redirect(reverse('home'))
+    if request.htmx:
+        return render(request, 'accounts/partials/par-logout.html', context= {})
     return render(request, 'accounts/logout.html', context= {})
 
 def profile_view(request):
     if request.user.is_authenticated:
         context = {
-            'profile': request.user.profile
+            'profile': request.user.profile,
+            'user': request.user
         }
     else:
         login_url = reverse('accounts:login') + '?next=' + reverse('account:profile')

@@ -19,8 +19,25 @@
 
 <h1>Hello {% if profile.first_name %} {{profile.first_name}} {%else%} {{profile.user.username}} {%endif%}</h1>
 
-<a href="{% url 'accounts:logout' %}" class="btn btn-outline-warning">Log Out</a>
+<a class="btn btn-primary btn-xl" href="{% url 'survey:create-title' %}">Create a New Survey</a> <br><br>
+
+<h3>Your Surveys</h3>
+{% for survey in user.survey.all %}
+        <a href="{{ survey.get_detail_url }}">{{ survey.title }}</a><br>
+{% endfor %}
+<br><br>
 <a href="{% url 'accounts:profile-completion' %}" class="btn btn-primary">Complete you profile</a>
+
+<a href="{% url 'accounts:logout' %}" 
+    hx-get="{% url 'accounts:logout' %}"
+    hx-swap="inner-html"
+    hx-target="#logout-confirmation-field"
+    class="btn btn-outline-warning">Log Out</a>
+
+<div id="logout-confirmation-field"></div>
+    
+
+
 
 
 {% endblock content %}

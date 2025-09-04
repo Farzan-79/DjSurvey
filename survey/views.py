@@ -3,7 +3,16 @@ from django.urls import reverse
 from .forms import SurveyCreationForm
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
+from .models import Survey
 # Create your views here.
+
+def survey_detail_view(request, slug=None):
+    survey = get_object_or_404(Survey, slug=slug)
+    context = {
+        'survey': survey
+    }
+    return render(request, 'survey/detail.html', context)
+    
 
 @login_required
 def survey_creation_view(request):
@@ -17,4 +26,8 @@ def survey_creation_view(request):
         context = {
             'form': form
         }
-        return render(request,'survey/create/create-title.html', context) 
+        return render(request,'survey/create/create-title.html', context)
+    
+def survey_edit_view(request, slug=None):
+    survey = get_object_or_404(Survey, slug=slug)
+    

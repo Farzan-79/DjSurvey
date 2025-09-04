@@ -1,0 +1,9 @@
+<form action="{% url 'accounts:logout' %}" method="post" id="logout-confirmation-form"> {% csrf_token %}
+<p>Are You sure you want to logout? <br> you are signed as "{{ request.user.username }}"</p>
+<button class="btn btn-outline-warning" type="submit">Yes</button>
+<button class="btn btn-secondary"
+        hx-target="#logout-confirmation-form"
+        hx-swap="delete"
+        hx-get="{% url 'accounts:logout' %}"
+>No</button>
+</form>

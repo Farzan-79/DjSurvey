@@ -1,5 +1,8 @@
 from django.db import models
 from django.conf import settings
+from django.urls import reverse
+from .utils import slugify_instance_name
+
 # Create your models here.
 
 class Survey(models.Model):
@@ -7,6 +10,18 @@ class Survey(models.Model):
     title = models.CharField(max_length=255)
     description = models.TextField(null=True, blank=True)
     created = models.DateField(auto_now_add=True)
+    slug = models.SlugField(unique= True, blank=True, null=True)
+
+    def save(self, *args, **kwargs):
+        if self.slug is None:
+            slugify_instance_name(self)
+        super().save(*args, **kwargs)
+
+    def get_detail_url(self):
+        return reverse('survey:detail', kwargs={'slug': self.slug})
+    
+    def get_edit_url(self):
+        return reverse('survey:edit', kwargs={'slug': self.slug})
 
 class Question(models.Model):
     survey = models.ForeignKey(Survey, on_delete=models.CASCADE, related_name='questions')

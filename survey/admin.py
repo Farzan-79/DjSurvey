@@ -14,7 +14,7 @@ class QuestionInline(nested_admin.NestedStackedInline):
 
 class SurveyAdmin(nested_admin.NestedModelAdmin):
     list_display = ['title', 'user']
-    readonly_fields = ['created']
+    readonly_fields = ['created', 'slug']
     inlines = [QuestionInline]
 
 admin.site.register(Survey, SurveyAdmin)

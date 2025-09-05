@@ -44,7 +44,6 @@ INSTALLED_APPS = [
     # local apps:
     'accounts',
     'survey',
-    'nested_admin',
 ]
 
 MIDDLEWARE = [

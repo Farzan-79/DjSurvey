@@ -1,0 +1,6 @@
+<!-- THIS is the place to use hx-* ... these should be in the SENDING DIV, not the target not the recieving -->
+<form action="." method="post" hx-post="{% url 'survey:edit' slug=object.slug %}" hx-target="#main-form" hx-swap="outerHTML">{% csrf_token %}
+    {{form.as_p}} <br><br>
+    
+    <button class="btn btn-primary" type="submit">submit</button>
+</form>

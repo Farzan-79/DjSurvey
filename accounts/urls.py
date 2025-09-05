@@ -3,7 +3,7 @@ from .views import profile_view, profile_completion_view, login_view, logout_vie
 
 app_name = 'accounts'
 urlpatterns = [
-    path('profile', profile_view, name='profile'),
+    path('profile/', profile_view, name='profile'),
     path('profile-completion/', profile_completion_view, name='profile-completion'),
     path('login/' ,login_view, name='login'),
     path('logout/' ,logout_view, name='logout'),

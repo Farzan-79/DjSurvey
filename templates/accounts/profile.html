@@ -23,7 +23,7 @@
 
 <h3>Your Surveys</h3>
 {% for survey in user.survey.all %}
-        <a href="{{ survey.get_detail_url }}">{{ survey.title }}</a><br>
+        <a href="{{ survey.get_absolute_url }}">{{ survey.title }}</a><br>
 {% endfor %}
 <br><br>
 <a href="{% url 'accounts:profile-completion' %}" class="btn btn-primary">Complete you profile</a>

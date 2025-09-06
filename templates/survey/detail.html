@@ -4,6 +4,12 @@
 
 <h3>{{ survey.title }}</h3>
 <p>{{ survey.description }}</p>
+<p>by: <span style="color: red;">{{ survey.user }}</span></p>
+
+{% if request.user and request.user == survey.user %}
 <a href="{{ survey.get_edit_url }}" class="btn btn-primary">Edit your Survey</a>
+<a hx-get="{{ survey.get_delete_url }}" hx-target="#survey-delete-field" hx-trigger="click" hx-swap="innerHTML" class="btn btn-danger">Delete Survey</a>
+<div id="survey-delete-field"></div>
+{% endif %}
 
 {% endblock content %}

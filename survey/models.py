@@ -17,11 +17,14 @@ class Survey(models.Model):
             slugify_instance_name(self)
         super().save(*args, **kwargs)
 
-    def get_detail_url(self):
+    def get_absolute_url(self):
         return reverse('survey:detail', kwargs={'slug': self.slug})
     
     def get_edit_url(self):
         return reverse('survey:edit', kwargs={'slug': self.slug})
+    
+    def get_delete_url(self):
+        return reverse('survey:delete', kwargs={'slug': self.slug})
 
 class Question(models.Model):
     survey = models.ForeignKey(Survey, on_delete=models.CASCADE, related_name='questions')

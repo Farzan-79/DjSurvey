@@ -1,4 +1,4 @@
-from django.shortcuts import render, redirect, get_object_or_404
+from django.shortcuts import render, redirect, get_object_or_404, HttpResponse
 from django.urls import reverse
 from .forms import SurveyCreationForm, SurveyQuestionForm, SurveyTitleForm
 from django.contrib import messages
@@ -39,7 +39,7 @@ def survey_creation_view(request):
     return render(request,'survey/create/create-update.html', context)
     
 def survey_edit_view(request, slug=None):
-    survey_object = get_object_or_404(Survey, slug=slug)
+    survey_object = get_object_or_404(Survey, slug=slug, user=request.user)
     form= SurveyCreationForm(request.POST or None, instance= survey_object)
     context = {
         'form': form,
@@ -55,26 +55,23 @@ def survey_edit_view(request, slug=None):
         return render(request, 'survey/create/par-edit.html', context)
     return render(request, 'survey/create/create-update.html', context)
 
+@login_required
+def survey_delete_view(request, slug=None):
+    object= get_object_or_404(Survey, slug=slug, user= request.user)
+    context = {
+        'object': object
+    }
+    if request.method == 'POST':
+        object.delete()
+        succes_url = reverse('accounts:profile')
+        if request.htmx:
+            return HttpResponse('success', headers= {'HX-Redirect': succes_url})
+        return redirect(succes_url)
+    if request.htmx:
+        return render(request, 'survey/create/par-survey-delete.html', context)
+    return render(request, 'survey/create/survey-delete.html', context)
 
-#def survey_edit_view(request, slug=None):
-#    survey = get_object_or_404(Survey, slug=slug)
-#    survey_form = SurveyCreationForm(request.POST or None, instance=survey)
-#    questions = survey.questions.all()
-#    for q in questions:
-#        question_form = SurveyQuestionForm(request.POST or None, instance=q)
-#    empty_question_form = SurveyQuestionForm(request.POST or None)
-#    context = {
-#        'form_s': survey_form,
-#        'form_q': empty_question_form
-#    }
-#    if survey_form.is_valid() and empty_question_form.is_valid():
-#        s = survey_form.save(commit=False)
-#        q = empty_question_form.save(commit=False)
-#        q.survey = survey
-#        q.save()
-#        s.save()
-#        return redirect(reverse('survey:detail', kwargs={'slug': slug}))
-#    return render(request, 'survey/create/edit.html', context)
+
 
     
 

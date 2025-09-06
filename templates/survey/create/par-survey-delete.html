@@ -1,0 +1,9 @@
+<div id="survey-delete-form">
+
+    <form action="{{ object.get_delete_url }}" method="post" hx-post="{{ object.get_delete_url }}">{% csrf_token %}
+        <h4>Are you want to delete "{{ object.title }}" Survey?</h4>
+        <button type="submit" class="btn btn-warning">Yes, Delete</button>
+        <button type="button" class="btn btn-secondary" hx-get="" hx-target="#survey-delete-form" hx-swap="delete" hx-trigger="click">No</button>
+    </form>
+
+</div>

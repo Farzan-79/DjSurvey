@@ -9,7 +9,7 @@ from .models import Survey
 def survey_detail_view(request, slug=None):
     survey = get_object_or_404(Survey, slug=slug)
     context = {
-        'survey': survey
+        'object': survey
     }
     return render(request, 'survey/detail.html', context)
     
@@ -21,39 +21,46 @@ def survey_creation_view(request):
         new_survey = form.save(commit=False)
         new_survey.user = request.user
         new_survey.save()
-        new_context={
-            'object': new_survey,
-            'form': SurveyCreationForm(instance= new_survey),
-            'create': True,
-        }
+        #### this adds the new survey pk to the session, so in the edit form that comes after this, it is present
+        # and it can find out if its a regular edit or a new creation ####
+        request.session['new_survey_pk'] = new_survey.pk
+        url = reverse('survey:edit', kwargs={'slug': new_survey.slug})
         if request.htmx:
-            return render(request, 'survey/create/par-edit.html', new_context)
-        return redirect(reverse('survey:edit', kwargs={'slug': new_survey.slug}))
+            return HttpResponse('saved', headers={'HX-Redirect': url})
+        return redirect(url)
 
     context = {
         'form': form,
         'create': True,
     }
-    if request.htmx:
+    if request.htmx: #if its invalid, only render the partial
         return render(request, 'survey/create/par-create-title.html', context)
-    return render(request,'survey/create/create-update.html', context)
+    #initial render, the full page
+    return render(request,'survey/create/create-title.html', context)
     
 def survey_edit_view(request, slug=None):
     survey_object = get_object_or_404(Survey, slug=slug, user=request.user)
     form= SurveyCreationForm(request.POST or None, instance= survey_object)
+    #### i set .get instead of .pop because if its pop, it will no longer be present in the POST method. so i want to set this value, and keep the session value for later
+    created_pk = request.session.get('new_survey_pk', None)
     context = {
         'form': form,
-        'edit': True,
-        'object': survey_object
+        'object': survey_object,
+        'create': survey_object.pk == created_pk,
     }
+    
     if form.is_valid():
+        #### here i just pop it so it is deleted, i had to keep it until this part, after that it should no longer be present
+        created_pk = request.session.pop('new_survey_pk', None)
         form.save()
         if request.htmx:
             return render(request, 'survey/create/saved.html', context)
-        return redirect(reverse('survey:detail', kwargs={'slug': survey_object.slug}))    
-    if request.htmx:
+        return redirect(reverse('survey:detail', kwargs={'slug': survey_object.slug}))
+
+    if request.htmx:  #if its invalid, only render the partial
         return render(request, 'survey/create/par-edit.html', context)
-    return render(request, 'survey/create/create-update.html', context)
+    #initial render, the full page
+    return render(request, 'survey/create/edit.html', context)
 
 @login_required
 def survey_delete_view(request, slug=None):
@@ -61,12 +68,14 @@ def survey_delete_view(request, slug=None):
     context = {
         'object': object
     }
+
     if request.method == 'POST':
         object.delete()
         succes_url = reverse('accounts:profile')
         if request.htmx:
             return HttpResponse('success', headers= {'HX-Redirect': succes_url})
         return redirect(succes_url)
+    
     if request.htmx:
         return render(request, 'survey/create/par-survey-delete.html', context)
     return render(request, 'survey/create/survey-delete.html', context)

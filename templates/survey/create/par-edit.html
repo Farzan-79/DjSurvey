@@ -1,6 +1,40 @@
-<!-- THIS is the place to use hx-* ... these should be in the SENDING DIV, not the target not the recieving -->
-<form action="." method="post" hx-post="{% url 'survey:edit' slug=object.slug %}" hx-target="#main-form" hx-swap="outerHTML">{% csrf_token %}
-    {{form.as_p}} <br><br>
-    
-    <button class="btn btn-primary" type="submit">submit</button>
-</form>
+<style>
+    #save-btn .btn {
+        display: inline;
+    }
+    #save-btn .indicator {
+        display: none;
+    }
+
+    #save-btn.htmx-request .btn {
+        opacity: 0.5;
+        cursor: not-allowed;
+        pointer-events: none;
+    }
+    #save-btn.htmx-request .indicator {
+        display: inline;
+    }
+</style>
+<div id="main-form">
+    {% if create %}
+        <h1>Create a New Surveyy</h1>
+    {% else %}
+        <h1>Edit Your Survey</h1>    
+    {% endif %}
+
+    <h1>{{ object.title }}</h1>
+    <!-- THIS is the place to use hx-* ... these should be in the SENDING DIV, not the target not the recieving -->
+    <form action="." method="post" 
+    hx-post="{% url 'survey:edit' slug=object.slug %}" 
+    hx-target="#main-form" hx-swap="outerHTML" 
+    hx-indicator="#save-btn">{% csrf_token %}
+
+        {{form.as_p}} <br><br>
+
+        <div id="save-btn">
+            <button class="btn btn-primary" type="submit">Continue</button>
+            <span class="indicator" style="font-size: larger; color: brown;">progressing</span>
+        </div>
+        
+    </form>
+</div>

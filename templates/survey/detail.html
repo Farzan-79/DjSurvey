@@ -2,14 +2,24 @@
 
 {% block content %}
 
-<h3>{{ survey.title }}</h3>
-<p>{{ survey.description }}</p>
-<p>by: <span style="color: red;">{{ survey.user }}</span></p>
+<h3>{{ object.title }}</h3>
+<p>{{ object.description }}</p>
+<p>by: <span style="color: red;">{{ object.user }}</span></p>
 
-{% if request.user and request.user == survey.user %}
-<a href="{{ survey.get_edit_url }}" class="btn btn-primary">Edit your Survey</a>
-<a hx-get="{{ survey.get_delete_url }}" hx-target="#survey-delete-field" hx-trigger="click" hx-swap="innerHTML" class="btn btn-danger">Delete Survey</a>
-<div id="survey-delete-field"></div>
+{% if request.user and request.user == object.user %}
+<a href="{{ object.get_edit_url }}" class="btn btn-primary">Edit your Survey</a>
+<a hx-get="{{ object.get_delete_url }}" hx-target="#object-delete-field" hx-trigger="click" hx-swap="innerHTML" class="btn btn-danger">Delete Survey</a>
+<div id="object-delete-field"></div>
 {% endif %}
+<br><br>
+<h3 style="color: rebeccapurple;">questions</h3>
+<ol>
+    {% for q in object.questions.all %}
+        <li>
+            <h4>{{ q.title }}<span style="font-size: x-small;">{{ q.question_type }}</span></h4>
+        </li>
+    {% endfor %}
+</ol>
+
 
 {% endblock content %}

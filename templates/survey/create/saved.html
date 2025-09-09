@@ -1,5 +1,9 @@
-<div hx-target="#main-form">
-    <h5>Your Survey has Been Savedddd</h5>
+<div>
+    {% if create %}
+    <h5>Your Survey has Been Created!</h5>
+    {% else %}
+    <h5>Data Saved</h5>
+    {% endif %}
     <a href="{{ object.get_absolute_url }}" class="btn btn-outline-primary">Survey Details Page</a>
     <a href="{% url 'home' %}" class="btn btn-outline-primary">Back to Home</a>
 </div>

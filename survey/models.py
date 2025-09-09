@@ -29,7 +29,7 @@ class Survey(models.Model):
 class Question(models.Model):
     survey = models.ForeignKey(Survey, on_delete=models.CASCADE, related_name='questions')
     title = models.CharField(max_length=255)
-    question_type = models.CharField(max_length=25, choices=[('multiple_choice', 'Multiple Choice'), ('text', 'Text')])
+    question_type = models.CharField(max_length=25, choices=[('multiple_choice', 'Multiple Choice'), ('text', 'Text Answer')])
 
 class Choice(models.Model):
     question = models.ForeignKey(Question, on_delete=models.CASCADE, related_name='choices')

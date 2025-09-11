@@ -1,15 +1,16 @@
-from django.shortcuts import render, redirect, get_object_or_404, HttpResponse
+from django.shortcuts import render, redirect, get_object_or_404, HttpResponse 
 from django.urls import reverse
-from .forms import SurveyCreationForm, SurveyQuestionForm, SurveyTitleForm
+from django.http import Http404
+from .forms import SurveyCreationForm, QuestionForm, SurveyTitleForm
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
-from .models import Survey
+from .models import Survey, Question, Answer, Choice
 # Create your views here.
 
 def survey_detail_view(request, slug=None):
     survey = get_object_or_404(Survey, slug=slug)
     context = {
-        'object': survey
+        'survey_obj': survey
     }
     return render(request, 'survey/detail.html', context)
     
@@ -79,6 +80,86 @@ def survey_delete_view(request, slug=None):
     if request.htmx:
         return render(request, 'survey/create/par-survey-delete.html', context)
     return render(request, 'survey/create/survey-delete.html', context)
+
+def question_view(request, parent_slug=None, id=None):
+    try:
+        parent_survey = Survey.objects.get(slug=parent_slug)
+    except:
+        parent_survey = None
+    if parent_survey == None:
+        return HttpResponse("Survey not found")
+    
+    # checking if this question was there before, or we are creating a new one
+    try:
+        instance = Question.objects.get(survey=parent_survey, id=id)
+    except:
+        instance = None
+
+    context = {
+        'question': instance
+    }
+    return render(request, 'survey/create/par-question.html', context)
+
+
+def question_create_view(request, parent_slug=None, id=None):
+    # checking if there is a parent survey for the question. it must have it
+    try:
+        parent_survey = Survey.objects.get(slug=parent_slug)
+    except:
+        parent_survey = None
+    if parent_survey == None:
+        return HttpResponse("Survey not found")
+    
+    # checking if this question was there before, or we are creating a new one
+    try:
+        instance = Question.objects.get(survey=parent_survey, id=id)
+    except:
+        instance = None
+
+    #url = 
+
+    form = QuestionForm(request.POST or None, instance= instance)
+    context = {
+        'form': form,
+        'question': instance,
+        'object': parent_survey
+    }
+    if form.is_valid():
+        question = form.save(commit=False)
+        if not instance:
+            question.survey = parent_survey
+        question.save()
+        return render(request, 'survey/create/par-question.html', {'question':question})
+
+    return render(request, 'survey/create/par-question-form.html', context)
+
+def question_delete_view(request, parent_slug=None, id=None):
+    if not request.htmx:
+        return Http404
+    
+    try:
+        parent_survey = Survey.objects.get(slug=parent_slug)
+    except:
+        parent_survey = None
+    if parent_survey == None:
+        return HttpResponse("Survey not found")
+    
+    try:
+        instance = Question.objects.get(survey=parent_survey, id=id)
+    except:
+        instance = None
+    if not instance:
+        return HttpResponse("Question not found")
+    
+    
+    if request.method=='POST':
+        instance.delete()
+        return HttpResponse("") # with hx-target="#q-<id>" and outerHTML, this empties it
+    
+    return render(request, 'survey/create/par-question-delete.html', {'question': instance})
+
+
+
 
 
 

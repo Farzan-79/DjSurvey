@@ -26,15 +26,33 @@ class Survey(models.Model):
     def get_delete_url(self):
         return reverse('survey:delete', kwargs={'slug': self.slug})
 
+
+
+
 class Question(models.Model):
     survey = models.ForeignKey(Survey, on_delete=models.CASCADE, related_name='questions')
     title = models.CharField(max_length=255)
     question_type = models.CharField(max_length=25, choices=[('multiple_choice', 'Multiple Choice'), ('text', 'Text Answer')])
 
+    def get_absolute_url(self):
+        return reverse('survey:question-detail', kwargs={'id': self.id, 'parent_slug': self.survey.slug})
+
+    def get_edit_url(self):
+        return reverse('survey:question-form', kwargs={'id': self.id, 'parent_slug': self.survey.slug})
+    
+    def get_delete_url(self):
+        return reverse('survey:question-delete', kwargs={'id': self.id, 'parent_slug': self.survey.slug})
+
+
+
+
+
 class Choice(models.Model):
     question = models.ForeignKey(Question, on_delete=models.CASCADE, related_name='choices')
     title = models.CharField(max_length=255)
     
+
+
 class Answer(models.Model):
     user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='answers')
     question = models.ForeignKey(Question, on_delete=models.CASCADE, related_name='answers')

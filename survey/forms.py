@@ -38,7 +38,7 @@ class SurveyCreationForm(forms.ModelForm):
             "class": "form-control"
         })
 
-class SurveyQuestionForm(forms.ModelForm):
+class QuestionForm(forms.ModelForm):
     class Meta:
         model= Question
         fields = ['title', 'question_type']

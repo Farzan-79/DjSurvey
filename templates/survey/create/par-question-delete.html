@@ -1,0 +1,5 @@
+<form id="q-{{question.id}}-delete-form" action="{{ question.get_delete_url }}" method="post" hx-post="{{ question.get_delete_url }}" hx-target="#q-{{question.id}}" hx-swap="delete">{% csrf_token %}
+    <p>Delete {{ question.title }}?</p>
+    <button type="submit">Yes</button>
+    <button type="button" hx-get="" hx-target="#q-{{question.id}}-delete-form" hx-swap="delete">No</button>
+</form>

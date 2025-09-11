@@ -16,6 +16,9 @@
     }
 </style>
 <div id="main-form">
+
+
+    <div>
     {% if create %}
         <h1>Create a New Surveyy</h1>
     {% else %}
@@ -31,10 +34,35 @@
 
         {{form.as_p}} <br><br>
 
+        
+        <h4>Questions:</h4>
+        <div id="question-list">
+        <!-- here we get "par-question.html" which shows the question as it is, each question is inside a unique id
+         and can change that id, whether they want to edit it or delete it, they can manipulate their own field -->
+        {% for question in object.questions.all %}
+            {% include 'survey/create/par-question.html' with question=question %}
+        {% endfor %}
+        <div id="new-question-form"></div>
+        </div>
+
+        <!-- btn to add another question, adds the form from par-question-form to end of the new-question-form div above -->
+        <button class="btn btn-secondary" type="button" hx-get="{% url 'survey:question-create' parent_slug=object.slug %}"
+        hx-target="#new-question-form" hx-swap="beforeend">Add Questions</button>
+        
+
+        <!-- the hx-indicator on the form, will add htmx-request to the #save-btn
+         a btn that is inside a save-btn, will be shown normally
+         a indicator inside a save-btn is hidden normally
+         but when save-btn also has htmx-request, the btn will be dimmed, and indicator is shown -->
         <div id="save-btn">
-            <button class="btn btn-primary" type="submit">Continue</button>
+            <button class="btn btn-primary" type="submit">Save</button>
             <span class="indicator" style="font-size: larger; color: brown;">progressing</span>
         </div>
+    
         
     </form>
+
+
+
+
 </div>

@@ -1,0 +1,22 @@
+<!-- the edit form that takes the place of the question itself (or after the questions for a new question), allowing user to edit it
+ if submitted, the edit view on hx-post will save it then send the new or updated question
+ if canceled, the old question is loaded again and takes place of the form without the new content being saved -->
+
+{% if question %} <!-- if the question already exists, meaning we are editing it  -->
+    <form action="." method="post" 
+    hx-post="{{ question.get_edit_url }}" hx-target="#q-{{question.id}}" hx-swap="outerHTML">{% csrf_token %}
+        {{ form.as_p }}
+        <button type="submit">Save</button>
+        <button type="button" hx-get="{{question.get_absolute_url}}" hx-target="#q-{{question.id}}" hx-swap="innerHTML">Cancel</button>
+    </form>
+{% else %} <!-- if the question did not exists, meaning we are creating it  -->
+    <form action="." method="post" id="new-question"
+    hx-post="{% url 'survey:question-create' parent_slug=object.slug %}" 
+    hx-target="this" 
+    hx-swap="outerHTML">{% csrf_token %}
+        {{ form.as_p }}
+        <button type="submit">Save</button>
+        <button type="button" hx-get="" hx-target="#new-question" hx-swap="delete">Cancel</button>
+    </form>
+{% endif %}
+

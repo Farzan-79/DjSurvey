@@ -1,5 +1,5 @@
-<form id="q-{{question.id}}-delete-form" action="{{ question.get_delete_url }}" method="post" hx-post="{{ question.get_delete_url }}" hx-target="#q-{{question.id}}" hx-swap="delete">{% csrf_token %}
-    <p>Delete {{ question.title }}?</p>
+<form id="q-{{question_obj.id}}-delete-form" action="{{ question_obj.get_delete_url }}" method="post" hx-post="{{ question_obj.get_delete_url }}" hx-target="#q-{{question_obj.id}}" hx-swap="delete">{% csrf_token %}
+    <p>Delete {{ question_obj.title }}?</p>
     <button type="submit">Yes</button>
-    <button type="button" hx-get="" hx-target="#q-{{question.id}}-delete-form" hx-swap="delete">No</button>
+    <button type="button" hx-get="" hx-target="#q-{{question_obj.id}}-delete-form" hx-swap="delete">No</button>
 </form>

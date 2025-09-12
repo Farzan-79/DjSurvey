@@ -2,18 +2,18 @@
  we have 2 btn, one for edit, which gets the par-question-form replacing all there is inside its ided field,
  and another for delete, which gets the delete confirmation partial and shows it below it in the div  -->
 
-<div id="q-{{question.id}}">
+<div id="q-{{question_obj.id}}">
 
-<h4>{{ question.title }}<span style="font-size: x-small; color: yellowgreen;">{{ question.question_type }}</span></h4>
+<h4>{{ question_obj.title }}<span style="font-size: x-small; color: yellowgreen;">{{ question_obj.question_type }}</span></h4>
 
-<button type="button" hx-get="{{ question.get_edit_url }}"
-hx-target="#q-{{question.id}}" hx-swap="innerHTML"
+<button type="button" hx-get="{{ question_obj.get_edit_url }}"
+hx-target="#q-{{question_obj.id}}" hx-swap="innerHTML"
 hx-trigger="click">EDIT</button>
 
-<button type="button" hx-get="{{ question.get_delete_url }}"
-hx-target="#q-{{question.id}}-delete-field" hx-swap="innerHTML"
+<button type="button" hx-get="{{ question_obj.get_delete_url }}"
+hx-target="#q-{{question_obj.id}}-delete-field" hx-swap="innerHTML"
 hx-trigger="click">DELETE</button>
 
-<div id="q-{{question.id}}-delete-field"></div>
+<div id="q-{{question_obj.id}}-delete-field"></div>
 
 </div>

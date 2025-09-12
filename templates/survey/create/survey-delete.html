@@ -2,11 +2,11 @@
 
 {% block content %}
 
-{% if request.user == object.user %}
+{% if request.user == survey_obj.user %}
     <form action="." method="post"> {% csrf_token %}
-        <h1>Are you sure you want to delete "{{object.title}}" Survey?</h1>
+        <h1>Are you sure you want to delete "{{survey_obj.title}}" Survey?</h1>
         <button type="submit" class="btn btn-danger">Yes, Delete it!</button>
-        <a href="{{object.get_absolute_url}}" class="btn btn-primary">No, Keep it.</a>
+        <a href="{{survey_obj.get_absolute_url}}" class="btn btn-primary">No, Keep it.</a>
     </form>
 {% else %}
     <h1>You are not allowed to do that</h1>

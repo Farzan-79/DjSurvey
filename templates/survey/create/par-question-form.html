@@ -2,19 +2,19 @@
  if submitted, the edit view on hx-post will save it then send the new or updated question
  if canceled, the old question is loaded again and takes place of the form without the new content being saved -->
 
-{% if question %} <!-- if the question already exists, meaning we are editing it  -->
+{% if question_obj %} <!-- if the question already exists, meaning we are editing it  -->
     <form action="." method="post" 
-    hx-post="{{ question.get_edit_url }}" hx-target="#q-{{question.id}}" hx-swap="outerHTML">{% csrf_token %}
-        {{ form.as_p }}
+    hx-post="{{ question_obj.get_edit_url }}" hx-target="#q-{{question_obj.id}}" hx-swap="outerHTML">{% csrf_token %}
+        {{ question_form.as_p }}
         <button type="submit">Save</button>
-        <button type="button" hx-get="{{question.get_absolute_url}}" hx-target="#q-{{question.id}}" hx-swap="innerHTML">Cancel</button>
+        <button type="button" hx-get="{{question_obj.get_absolute_url}}" hx-target="#q-{{question_obj.id}}" hx-swap="innerHTML">Cancel</button>
     </form>
 {% else %} <!-- if the question did not exists, meaning we are creating it  -->
     <form action="." method="post" id="new-question"
-    hx-post="{% url 'survey:question-create' parent_slug=object.slug %}" 
+    hx-post="{% url 'survey:question-create' parent_slug=survey_obj.slug %}" 
     hx-target="this" 
     hx-swap="outerHTML">{% csrf_token %}
-        {{ form.as_p }}
+        {{ question_form.as_p }}
         <button type="submit">Save</button>
         <button type="button" hx-get="" hx-target="#new-question" hx-swap="delete">Cancel</button>
     </form>

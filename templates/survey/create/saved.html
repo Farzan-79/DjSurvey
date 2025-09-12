@@ -4,6 +4,6 @@
     {% else %}
     <h5>Data Saved</h5>
     {% endif %}
-    <a href="{{ object.get_absolute_url }}" class="btn btn-outline-primary">Survey Details Page</a>
+    <a href="{{ survey_obj.get_absolute_url }}" class="btn btn-outline-primary">Survey Details Page</a>
     <a href="{% url 'home' %}" class="btn btn-outline-primary">Back to Home</a>
 </div>

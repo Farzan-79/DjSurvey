@@ -38,7 +38,7 @@ class Question(models.Model):
         return reverse('survey:question-detail', kwargs={'id': self.id, 'parent_slug': self.survey.slug})
 
     def get_edit_url(self):
-        return reverse('survey:question-form', kwargs={'id': self.id, 'parent_slug': self.survey.slug})
+        return reverse('survey:question-update', kwargs={'id': self.id, 'parent_slug': self.survey.slug})
     
     def get_delete_url(self):
         return reverse('survey:question-delete', kwargs={'id': self.id, 'parent_slug': self.survey.slug})

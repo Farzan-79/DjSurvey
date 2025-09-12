@@ -40,14 +40,14 @@ def survey_creation_view(request):
     return render(request,'survey/create/create-title.html', context)
     
 def survey_edit_view(request, slug=None):
-    survey_object = get_object_or_404(Survey, slug=slug, user=request.user)
-    form= SurveyCreationForm(request.POST or None, instance= survey_object)
+    survey_obj = get_object_or_404(Survey, slug=slug, user=request.user)
+    form= SurveyCreationForm(request.POST or None, instance= survey_obj)
     #### i set .get instead of .pop because if its pop, it will no longer be present in the POST method. so i want to set this value, and keep the session value for later
     created_pk = request.session.get('new_survey_pk', None)
     context = {
-        'form': form,
-        'object': survey_object,
-        'create': survey_object.pk == created_pk,
+        'survey_form': form,
+        'survey_obj': survey_obj,
+        'create': survey_obj.pk == created_pk,
     }
     
     if form.is_valid():
@@ -56,7 +56,7 @@ def survey_edit_view(request, slug=None):
         form.save()
         if request.htmx:
             return render(request, 'survey/create/saved.html', context)
-        return redirect(reverse('survey:detail', kwargs={'slug': survey_object.slug}))
+        return redirect(reverse('survey:detail', kwargs={'slug': survey_obj.slug}))
 
     if request.htmx:  #if its invalid, only render the partial
         return render(request, 'survey/create/par-edit.html', context)
@@ -67,7 +67,7 @@ def survey_edit_view(request, slug=None):
 def survey_delete_view(request, slug=None):
     object= get_object_or_404(Survey, slug=slug, user= request.user)
     context = {
-        'object': object
+        'survey_obj': object
     }
 
     if request.method == 'POST':
@@ -96,7 +96,7 @@ def question_view(request, parent_slug=None, id=None):
         instance = None
 
     context = {
-        'question': instance
+        'question_obj': instance
     }
     return render(request, 'survey/create/par-question.html', context)
 
@@ -120,16 +120,16 @@ def question_create_view(request, parent_slug=None, id=None):
 
     form = QuestionForm(request.POST or None, instance= instance)
     context = {
-        'form': form,
-        'question': instance,
-        'object': parent_survey
+        'question_form': form,
+        'question_obj': instance,
+        'survey_obj': parent_survey
     }
     if form.is_valid():
         question = form.save(commit=False)
         if not instance:
             question.survey = parent_survey
         question.save()
-        return render(request, 'survey/create/par-question.html', {'question':question})
+        return render(request, 'survey/create/par-question.html', {'question_obj':question})
 
     return render(request, 'survey/create/par-question-form.html', context)
 
@@ -156,7 +156,7 @@ def question_delete_view(request, parent_slug=None, id=None):
         instance.delete()
         return HttpResponse("") # with hx-target="#q-<id>" and outerHTML, this empties it
     
-    return render(request, 'survey/create/par-question-delete.html', {'question': instance})
+    return render(request, 'survey/create/par-question-delete.html', {'question_obj': instance})
 
 
 

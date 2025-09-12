@@ -18,7 +18,7 @@ urlpatterns = [
     path("<slug:slug>/edit/", survey_edit_view, name="edit"),
     path("<slug:slug>/delete/", survey_delete_view, name="delete"),
 
-    path("<slug:parent_slug>/question/<int:id>/update/", question_create_view ,name="question-form"),
+    path("<slug:parent_slug>/question/<int:id>/update/", question_create_view ,name="question-update"),
     path("<slug:parent_slug>/question/create/", question_create_view ,name="question-create"),
     path("<slug:parent_slug>/question/<int:id>/delete", question_delete_view ,name="question-delete"),
     path("<slug:parent_slug>/question/<int:id>", question_view ,name="question-detail"),

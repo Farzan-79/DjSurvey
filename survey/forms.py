@@ -1,4 +1,5 @@
 from django import forms
+from django.forms import inlineformset_factory
 from .models import Survey, Question, Choice, Answer
 
 
@@ -55,3 +56,20 @@ class QuestionForm(forms.ModelForm):
         self.fields['question_type'].widget.attrs.update({
             "class": "form-control"
         })
+
+
+class ChoiceForm(forms.ModelForm):
+    class Meta:
+        model= Choice
+        fields = ['title']
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields['title'].label= 'Choice'
+        self.fields['title'].widget.attrs.update({
+            'placeholder': "e.g. Choice \'A\'",
+            "class": "form-control"
+            
+        })
+
+ChoiceFormSet = inlineformset_factory(Question, Choice, ChoiceForm, can_delete=True, can_order=False, extra=1)

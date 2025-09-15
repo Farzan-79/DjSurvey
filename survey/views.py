@@ -1,7 +1,8 @@
 from django.shortcuts import render, redirect, get_object_or_404, HttpResponse 
 from django.urls import reverse
 from django.http import Http404
-from .forms import SurveyCreationForm, QuestionForm, SurveyTitleForm
+from django.db import transaction
+from .forms import SurveyCreationForm, QuestionForm, SurveyTitleForm, ChoiceForm, ChoiceFormSet
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from .models import Survey, Question, Answer, Choice
@@ -118,17 +119,34 @@ def question_create_view(request, parent_slug=None, id=None):
 
     #url = 
 
-    form = QuestionForm(request.POST or None, instance= instance)
+    question_form = QuestionForm(request.POST or None, instance= instance)
+    choice_formset = ChoiceFormSet(request.POST or None, instance= instance, prefix='choice')
+
     context = {
-        'question_form': form,
+        'question_form': question_form,
         'question_obj': instance,
-        'survey_obj': parent_survey
+        'survey_obj': parent_survey,
+        'choice_formset': choice_formset,
     }
-    if form.is_valid():
-        question = form.save(commit=False)
-        if not instance:
-            question.survey = parent_survey
-        question.save()
+    
+    if question_form.is_valid():
+        if instance and question_form.cleaned_data.get('question_type') == 'multiple_choice' and choice_formset.is_valid():
+            with transaction.atomic():
+                question = question_form.save(commit=False)
+                if not instance:
+                    question.survey = parent_survey
+                question_form.save()
+                choice_formset.instance = question
+                choice_formset.save()
+        else:
+            question = question_form.save(commit=False) #if being created for the first time, or it has text as type
+            if not instance:
+                question.survey = parent_survey
+            question_form.save()
+        #delete every choice the question might have if type is changed to text
+        if question.question_type == 'text' and question.choices.exists():
+            for c in question.choices.all():
+                c.delete()
         return render(request, 'survey/create/par-question.html', {'question_obj':question})
 
     return render(request, 'survey/create/par-question-form.html', context)
@@ -157,6 +175,33 @@ def question_delete_view(request, parent_slug=None, id=None):
         return HttpResponse("") # with hx-target="#q-<id>" and outerHTML, this empties it
     
     return render(request, 'survey/create/par-question-delete.html', {'question_obj': instance})
+
+#### used this first, then decided not to use it. we'll see
+def choice_create_view(request, q_id=None, c_id= None):
+    try:
+        parent_question = Question.objects.get(id=q_id)
+    except:
+        return HttpResponse("question not found") 
+    try:
+        choice = Choice.objects.get(id=c_id, question=parent_question)
+    except:
+        choice = None
+       
+    form = ChoiceForm(request.POST or None, instance= choice)
+    if form.is_valid():
+        choice = form.save(commit=False)
+        if not choice.pk:
+            choice.question = parent_question
+        choice.save()
+        return HttpResponse("Choice saved")
+    context = {
+        "question_obj": parent_question,
+        "choice_form": form,
+        "choice_obj": choice,
+    }
+    return render(request, 'survey/create/par-choice-form.html', context=context)
+
+    
 
 
 

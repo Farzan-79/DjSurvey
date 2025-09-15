@@ -6,7 +6,8 @@ from .views import (
     survey_delete_view, 
     question_create_view,
     question_delete_view,
-    question_view
+    question_view,
+    choice_create_view
 )
 
 
@@ -20,8 +21,13 @@ urlpatterns = [
 
     path("<slug:parent_slug>/question/<int:id>/update/", question_create_view ,name="question-update"),
     path("<slug:parent_slug>/question/create/", question_create_view ,name="question-create"),
-    path("<slug:parent_slug>/question/<int:id>/delete", question_delete_view ,name="question-delete"),
-    path("<slug:parent_slug>/question/<int:id>", question_view ,name="question-detail"),
+    path("<slug:parent_slug>/question/<int:id>/delete/", question_delete_view ,name="question-delete"),
+    path("<slug:parent_slug>/question/<int:id>/", question_view ,name="question-detail"),
+
+    # these are not being used anymore, but i'll let them be for now
+    path("question/<int:q_id>/choice/<int:c_id>/update/", choice_create_view, name="choice-update"),
+    path("question/<int:q_id>/choice/create/", choice_create_view, name="choice-create"),
+    #path("<slug:parent_slug>/question/<int:q_id>/choice/<int:c-id>/delete/",,name="choice-delete"),
 
    
 ]

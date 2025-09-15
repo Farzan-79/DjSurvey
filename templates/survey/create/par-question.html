@@ -6,6 +6,14 @@
 
 <h4>{{ question_obj.title }}<span style="font-size: x-small; color: yellowgreen;">{{ question_obj.question_type }}</span></h4>
 
+{% if question_obj.choices.exists %}
+    <ol>
+    {% for choice in question_obj.choices.all %}
+        <li>{{ choice.title }}</li>
+    {% endfor %}
+    </ol>
+{% endif %}
+
 <button type="button" hx-get="{{ question_obj.get_edit_url }}"
 hx-target="#q-{{question_obj.id}}" hx-swap="innerHTML"
 hx-trigger="click">EDIT</button>

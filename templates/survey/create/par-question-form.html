@@ -5,8 +5,27 @@
 {% if question_obj %} <!-- if the question already exists, meaning we are editing it  -->
     <form action="." method="post" 
     hx-post="{{ question_obj.get_edit_url }}" hx-target="#q-{{question_obj.id}}" hx-swap="innerHTML">{% csrf_token %}
-        {{ question_form.as_table }}
 
+<!-- #region question form -->
+    <div class="{% if question_form.form.required %}{{question_form.required_css_class}}{% endif %}">
+            {% if question_form.non_field_errors %}
+                <ul class="errors">
+                {% for err in question_form.non_field_errors %}
+                    <li><p style="color: red;">{{err}}</p></li>                
+                {% endfor %}
+                </ul>
+            {% endif %}
+            {% for field in question_form %}
+                <div class="mb-2">
+                    {% if field.errors %}
+                        <p style="color: red;" class="error">{{ field.errors }}</p>
+                    {% endif %}
+                </div>
+                <strong>{{ field.label_tag }}</strong>
+                {{ field }}
+            {% endfor %}
+        </div>
+<!-- #endregion -->
 
 <!-- #region choice formset -->
     {% if question_obj.question_type == 'multiple_choice' %}
@@ -25,11 +44,9 @@
         <p class="hint">Leave blank rows to skip creating them. Use Delete to remove existing choices.</p>
     </div>
     {% endif %}
-
-
 <!-- #endregion -->
 
-<!-- #region choices  -->
+<!-- #region choices old -->
         <!-- <div id="choice-field">
         {% if question_obj.question_type == 'multiple_choice' %}
             {% if question_obj.choices.exists %}
@@ -56,7 +73,26 @@
     hx-post="{% url 'survey:question-create' parent_slug=survey_obj.slug %}" 
     hx-target="this" 
     hx-swap="outerHTML">{% csrf_token %}
-        {{ question_form.as_p }}
+<!-- #region question form -->
+        <div class="{% if question_form.form.required %}{{question_form.required_css_class}}{% endif %}">
+            {% if question_form.non_field_errors %}
+                <ul class="errors">
+                {% for err in question_form.non_field_errors %}
+                    <li><p style="color: red;">{{err}}</p></li>                
+                {% endfor %}
+                </ul>
+            {% endif %}
+            {% for field in question_form %}
+                <div class="mb-2">
+                    {% if field.errors %}
+                        <p style="color: red;" class="error">{{ field.errors }}</p>
+                    {% endif %}
+                </div>
+                <strong>{{ field.label_tag }}</strong>
+                {{ field }}
+            {% endfor %}
+        </div>
+<!-- #endregion -->
         <button type="submit">Save</button>
         <button type="button" hx-get="" hx-target="#new-question" hx-swap="delete">Cancel</button>
     </form>

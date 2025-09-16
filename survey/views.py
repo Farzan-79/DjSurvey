@@ -135,7 +135,7 @@ def question_create_view(request, parent_slug=None, id=None):
                 question = question_form.save(commit=False)
                 if not instance:
                     question.survey = parent_survey
-                question_form.save()
+                question.save()
                 choice_formset.instance = question
                 choice_formset.save()
         else:
@@ -145,15 +145,14 @@ def question_create_view(request, parent_slug=None, id=None):
             question_form.save()
         #delete every choice the question might have if type is changed to text
         if question.question_type == 'text' and question.choices.exists():
-            for c in question.choices.all():
-                c.delete()
+            question.choices.all().delete()
         return render(request, 'survey/create/par-question.html', {'question_obj':question})
 
     return render(request, 'survey/create/par-question-form.html', context)
 
 def question_delete_view(request, parent_slug=None, id=None):
     if not request.htmx:
-        return Http404
+        raise Http404
     
     try:
         parent_survey = Survey.objects.get(slug=parent_slug)

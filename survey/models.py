@@ -13,7 +13,7 @@ class Survey(models.Model):
     slug = models.SlugField(unique= True, blank=True, null=True)
 
     def save(self, *args, **kwargs):
-        if self.slug is None:
+        if not self.slug:
             slugify_instance_name(self)
         super().save(*args, **kwargs)
 

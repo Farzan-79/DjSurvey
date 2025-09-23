@@ -1,0 +1,57 @@
+{% comment %} ? -------------------------------------------------------------------
+*    par-choice-area.html
+*    - Renders the ChoiceFormSet for a question.
+*    - Must include:
+*      * management_form  (TOTAL_FORMS, INITIAL_FORMS, ...)
+*      * hidden fields for each form (id, FK) -> we render form.hidden_fields
+*    - The + Add choice button posts to choice_area_view with hx-vals {"action":"add"}.
+*    - The view increases TOTAL_FORMS and returns the updated formset HTML so the client shows one more blank form.
+?   -------------------------------------------------------------------  {% endcomment %}
+
+
+<br>
+{{choice_formset.management_form}}
+
+<table class="table">
+    <tr><h5>Choices:<h5><tr>
+    {% for form in choice_formset %}
+        <tr>
+            <td>
+                {% for hidden in form.hidden_fields %}
+                    {{ hidden }}
+                {% endfor %}
+
+                {{form.title}}
+
+                {% if form.non_field_errors %}
+                    {% for err in form.non_field_errors %}
+                    <div class="text-danger">{{ form.non_field_errors }}</div>
+                    {% endfor %}
+                {% endif %}
+            </td>
+            <td>
+                {{form.DELETE}} Delete
+            </td>
+        </tr>
+    {% endfor %}
+
+</table>
+
+
+{% comment %} ? ------------------------------------
+* + Add choice button:
+*    - hx-post: calls choice_area endpoint
+*    - hx-include="closest form": include the entire question form so management_form + hidden fields are in POST
+*    - hx-vals: adds {"action":"add"} so server knows to increment TOTAL_FORMS
+*    - hx-target: the container that will be replaced with returned HTML
+*    - hx-swap: outerHTML / innerHTML controls how replacement happens (innerHTML here)
+? ------------------------------------- {% endcomment %}
+<button type="button"
+        class="btn btn-sm btn-outline-secondary"
+        hx-post="{% url 'survey:choice-area' parent_slug=survey_obj.slug %}"
+        hx-include="closest form"                 
+        hx-vals='{"action":"add"}'                
+        hx-target="#choice-area-{{ prefix }}"
+        hx-swap="innerHTML">
+    + Add choice
+</button>

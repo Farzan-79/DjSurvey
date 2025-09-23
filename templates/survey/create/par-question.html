@@ -1,6 +1,11 @@
-<!-- here we show the questions inside the edit form.
- we have 2 btn, one for edit, which gets the par-question-form replacing all there is inside its ided field,
- and another for delete, which gets the delete confirmation partial and shows it below it in the div  -->
+
+{% comment %} ? -------------------------------------------------------------------
+*     par-question.html
+*   - Rendered when a question is in "display" mode inside the survey edit page. (not "edit" mode!)
+*   - Buttons call HTMX endpoints to swap the question's container into the edit form,
+*     or to show delete confirmation.
+*   - Each question block has a unique DOM id (#q-<id>) — HTMX targets that id for swaps.
+?   -------------------------------------------------------------------   {% endcomment %}
 
 <div id="q-{{question_obj.id}}">
 
@@ -9,12 +14,14 @@
 {% if question_obj.choices.exists %}
     <ol>
     {% for choice in question_obj.choices.all %}
-        <li>{{ choice.title }}</li>
+        <li>
+            {{ choice.title }}
+        </li>
     {% endfor %}
     </ol>
 {% endif %}
 
-<button type="button" hx-get="{{ question_obj.get_edit_url }}"
+<button type="button" hx-get="{{ question_obj.get_update_url }}"
 hx-target="#q-{{question_obj.id}}" hx-swap="innerHTML"
 hx-trigger="click">EDIT</button>
 
@@ -25,3 +32,5 @@ hx-trigger="click">DELETE</button>
 <div id="q-{{question_obj.id}}-delete-field"></div>
 
 </div>
+
+    

@@ -7,7 +7,7 @@
 <p>by: <span style="color: red;">{{ survey_obj.user }}</span></p>
 
 {% if request.user and request.user == survey_obj.user %}
-<a href="{{ survey_obj.get_edit_url }}" class="btn btn-primary">Edit your Survey</a>
+<a href="{{ survey_obj.get_update_url }}" class="btn btn-primary">Edit your Survey</a>
 <a hx-get="{{ survey_obj.get_delete_url }}" hx-target="#survey_obj-delete-field" hx-trigger="click" hx-swap="innerHTML" class="btn btn-danger">Delete Survey</a>
 <div id="survey_obj-delete-field"></div>
 {% endif %}

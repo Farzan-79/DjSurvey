@@ -1,100 +1,113 @@
-<!-- the edit form that takes the place of the question itself (or after the questions for a new question), allowing user to edit it
- if submitted, the edit view on hx-post will save it then send the new or updated question
- if canceled, the old question is loaded again and takes place of the form without the new content being saved -->
+{% comment %} ?----------------------------------------------------------------------------
+*   par-question-form.html
+*   - This partial is used for BOTH create and update of a question (HTMX swaps it into place).
+*     it finds out if the form is for creating or updating form, and sets the hx values accordingly
+*   - It includes:
+*       * a hidden input "prefix" so server knows which formset prefix the client is using.
+*       * id (question id) for updates.
+*       * the question_title input AND the question_type select.
+*       * a placeholder div (#choice-area-{{ prefix }}) that HTMX will replace with the choice formset.
+*   - Important HTMX bits:
+*       * When question_type select changes, it posts to choice-area endpoint using hx-post
+*         and hx-include="closest form" so the server sees the prefix + any typed choice values.
+*       * The choice-area div id uses the prefix to allow multiple question forms on the page.
+? ---------------------------------------------------------------------------- {% endcomment %}
 
-{% if question_obj %} <!-- if the question already exists, meaning we are editing it  -->
-    <form action="." method="post" 
-    hx-post="{{ question_obj.get_edit_url }}" hx-target="#q-{{question_obj.id}}" hx-swap="innerHTML">{% csrf_token %}
 
-<!-- #region question form -->
-    <div class="{% if question_form.form.required %}{{question_form.required_css_class}}{% endif %}">
-            {% if question_form.non_field_errors %}
-                <ul class="errors">
-                {% for err in question_form.non_field_errors %}
-                    <li><p style="color: red;">{{err}}</p></li>                
-                {% endfor %}
-                </ul>
-            {% endif %}
-            {% for field in question_form %}
-                <div class="mb-2">
-                    {% if field.errors %}
-                        <p style="color: red;" class="error">{{ field.errors }}</p>
-                    {% endif %}
-                </div>
-                <strong>{{ field.label_tag }}</strong>
-                {{ field }}
-            {% endfor %}
-        </div>
-<!-- #endregion -->
 
-<!-- #region choice formset -->
-    {% if question_obj.question_type == 'multiple_choice' %}
-    <div id="choice-formset">
-        {{ choice_formset.management_form }}
-        <table>
-            {% for ch_form in choice_formset %}
-            <tr id="choice-row">
-                 <td>{{ ch_form.as_table }}</td>
-            </tr>
-            {% if ch_form.non_field_errors %}
-                <tr><td colspan="2">{{ ch_form.non_field_errors }}</td></tr>
-            {% endif %}
-            {% endfor %}
-        </table>
-        <p class="hint">Leave blank rows to skip creating them. Use Delete to remove existing choices.</p>
-    </div>
+
+<form action="." method="post" 
+hx-post="{% if question_obj %} {{question_obj.get_update_url}} {% else %} {% url 'survey:question-create' parent_slug=survey_obj.slug %} {% endif %}"
+id="{% if question_obj %} edit-form-{{question_obj.id}} {% else %} new-question-form {% endif %}"
+hx-target="{% if question_obj %} #q-{{question_obj.id}} {% else %}this{% endif %}" 
+hx-swap="{% if question_obj %} outerHTML {% else %} outerHTML {% endif %}">{% csrf_token %}
+
+    {% comment %} ?
+    *   Hidden input 'prefix' is CRITICAL:
+    *        - client carries prefix between HTMX calls so server can bind formset data correctly
+    *        - for new questions: prefix is a temp string (generate_temp_prefix)
+    *        - for existing questions: prefix is stable e.g. "choice-51
+    ?{% endcomment %}
+
+    <input type="hidden" name="prefix" value="{{prefix}}">
+    {% if question_obj %}
+        <input type="hidden" name="id" value="{{ question_obj.id }}">
     {% endif %}
-<!-- #endregion -->
 
-<!-- #region choices old -->
-        <!-- <div id="choice-field">
-        {% if question_obj.question_type == 'multiple_choice' %}
-            {% if question_obj.choices.exists %}
-                {% for choice in question_obj.choices.all %}
-                    <div hx-get="{% url 'survey:choice-update' q_id=question_obj.id c_id=choice.id %}"
-                    hx-trigger="load"
-                    hx-target="#choice-field"
-                    hx-swap="beforeend"></div>
-                {% endfor %}
-            {% endif %}
-            <button type="button" hx-get="{% url 'survey:choice-create' q_id=question_obj.id %}"
-            hx-trigger="click"
-            hx-target="#choice-field"
-            hx-swap="beforeend">Add Choices</button>
-            <div id="new-choices"></div>
+    <!-- #region title field -->
+        {{ question_form.title.label_tag }}
+        {{ question_form.title }}
+        {% if question_form.title.errors %}
+            <div class="text-danger">{{ question_form.title.errors }}</div>
         {% endif %}
-        </div>  -->
-<!-- #endregion -->
-        <button type="submit">Save</button>
-        <button type="button" hx-get="{{question_obj.get_absolute_url}}" hx-target="#q-{{question_obj.id}}" hx-swap="outerHTML">Cancel</button>
-    </form>
-{% else %} <!-- if the question did not exists, meaning we are creating it  -->
-    <form action="." method="post" id="new-question"
-    hx-post="{% url 'survey:question-create' parent_slug=survey_obj.slug %}" 
-    hx-target="this" 
-    hx-swap="outerHTML">{% csrf_token %}
-<!-- #region question form -->
-        <div class="{% if question_form.form.required %}{{question_form.required_css_class}}{% endif %}">
-            {% if question_form.non_field_errors %}
-                <ul class="errors">
-                {% for err in question_form.non_field_errors %}
-                    <li><p style="color: red;">{{err}}</p></li>                
-                {% endfor %}
-                </ul>
-            {% endif %}
-            {% for field in question_form %}
-                <div class="mb-2">
-                    {% if field.errors %}
-                        <p style="color: red;" class="error">{{ field.errors }}</p>
-                    {% endif %}
-                </div>
-                <strong>{{ field.label_tag }}</strong>
-                {{ field }}
+    <!-- #endregion -->
+
+    <!-- #region select type field -->
+
+    {% comment %} ?
+    *   Why we render the select manually (instead of question_form.question_type):
+    *         - we need to attach HTMX attributes to the SELECT element so we POST when changed
+    *         - hx-include="closest form" ensures the whole form (including prefix and any typed choice fields) is included 
+    ?{% endcomment %}
+
+        <label for="{{question_form.question_type.id_for_label}}">{{ question_form.question_type.label }}</label>
+        <select name="{{question_form.question_type.name}}" id="{{question_form.question_type.id_for_label}}"
+        hx-post="{% url 'survey:choice-area' parent_slug=survey_obj.slug %}"
+        hx-include="closest form"
+        hx-trigger="change"
+        hx-target="#choice-area-{{prefix}}"
+        hx-swap="innerHTML"
+        class="form-control">
+
+            {% for val,label in question_form.fields.question_type.choices %}
+                <option value="{{ val }}" {% if question_form.question_type.value == val %}selected{% endif %}>
+                    {{label}}
+                </option>
             {% endfor %}
-        </div>
-<!-- #endregion -->
-        <button type="submit">Save</button>
-        <button type="button" hx-get="" hx-target="#new-question" hx-swap="delete">Cancel</button>
-    </form>
-{% endif %}
+
+        </select>
+
+        {% if question_form.question_type.errors %}
+            <div class="text-danger">{{ question_form.question_type.errors }}</div>
+        {% endif %}
+
+    <!-- #endregion -->
+
+
+    {% comment %} ?
+*       - The choice-area placeholder. HTMX will replace the inner HTML of this div  
+*           with the rendered choice formset partial when needed. The id includes the prefix
+*           so multiple question forms on the page keep their own choice areas.
+*
+*       - Typically, for new forms you render the empty formset; for edits you render the saved ones.
+*         But regardless HTMX will update this div when the question_type changes or user clicks Add Choice.
+*
+*       - Server renders a choice_formset here on the initial render if the question_type is multiple_choice,
+*           because only "+ add button" and changing the question_type will send a request to choice_area_view
+*           and when first clicking edit on an existing form, there is no request. so we must include it 
+    ? {% endcomment %}
+
+    <div id="choice-area-{{ prefix }}">
+        {% if question_obj.question_type == 'multiple_choice' %}
+            {% include 'survey/create/par-choice-area.html' %}
+        {% endif %}
+    </div>
+
+
+    <br>
+    <div>
+        <button type="submit" class="btn btn-outline-primary">Save</button>
+        {% comment %} ?
+        *   if question exists, the cancel btn just GETs the regular question detail via htmx
+        *   if id doesnt, it deletes the whole form that was added
+        ? {% endcomment %}
+        <button type="button" class="btn btn-outline-secondary"
+                {% if question_obj %}
+                   hx-get="{{ question_obj.get_absolute_url }}" hx-target="#q-{{ question_obj.id }}" hx-swap="outerHTML"
+                {% else %}
+                   hx-get="" hx-target="closest form" hx-swap="delete"
+                {% endif %}>Cancel</button>
+    </div>
+
+</form>
 

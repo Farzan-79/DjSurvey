@@ -1,3 +1,11 @@
+{% comment %} ? -------------------------------------------------------------------
+*   - partial used when editing the survey (main form wrapper)
+*     this is the resault of the user clicking edit on the "detail.html"
+*     the resault will go to the same view, this time POSTing 
+*   - The main form uses HTMX on the save and inline question partials appear inside.
+*   - Save button has an indicator that the CSS uses to show HTMX request status.
+?   ------------------------------------------------------------------- {% endcomment %}
+
 <style>
     #save-btn .btn {
         display: inline;
@@ -15,18 +23,26 @@
         display: inline;
     }
 </style>
+
 <div id="main-form">
 
 
     <div>
     {% if create %}
-        <h1>Create a New Surveyy</h1>
+        <h1 style="color: blue">Create a New Survey</h1>
     {% else %}
-        <h1>Edit Your Survey</h1>    
+        <h1 style="color: blue">Edit Your Survey</h1>    
     {% endif %}
 
-    <h1>{{ survey_obj.title }}</h1>
-    <!-- THIS is the place to use hx-* ... these should be in the SENDING DIV, not the target not the recieving -->
+    <h5 style="color: purple">title:      <span><h1>{{ survey_obj.title }}</h1></span></h5>
+    {% comment %} ?
+    *    - THIS is the place to use hx-* ... these should be in the SENDING DIV,
+    *      not the target not the recieving or anything. the element sending the request should contain all the hx values
+    *    - the data coming back, which is the saved form  
+    *    - the hx-indicator means when htmx is trying to do something (POST in this case), it will send the "htmx-request" class
+    *      to the selected element (save-btn). the default is the element sending the element itself.
+    *      we do this to let the page understand when and where to show indicators when saving is in progress 
+    ?{% endcomment %}
     <form action="." method="post" 
     hx-post="{% url 'survey:edit' slug=survey_obj.slug %}" 
     hx-target="#main-form" hx-swap="outerHTML" 
@@ -35,29 +51,52 @@
         {{survey_form.as_p}} <br><br>
 
         
-        <h4>Questions:</h4>
+        <h4 style="color: purple">Questions:</h4>
         <div id="question-list">
-        <!-- here we get "par-question.html" which shows the question as it is, each question is inside a unique id
-         and can change that id, whether they want to edit it or delete it, they can manipulate their own field -->
+        {% comment %} ?
+        *   - here we include "par-question.html" which shows the question as it is (its "display" mode),
+        *     each question is inside a container with its unique ID, and in that page, they can change what's inside the container
+        *     by clicking edit or delete.
+        ?{% endcomment %}
         {% for question in survey_obj.questions.all %}
             {% include 'survey/create/par-question.html' with question_obj=question %}
         {% endfor %}
+
+        {% comment %} ?
+        *   container of new questions that are being added to the survey
+        ? {% endcomment %}
         <div id="new-question-form"></div>
         </div>
 
-        <!-- btn to add another question, adds the form from par-question-form to end of the new-question-form div above -->
-        <button class="btn btn-secondary" type="button" hx-get="{% url 'survey:question-create' parent_slug=survey_obj.slug %}"
-        hx-target="#new-question-form" hx-swap="beforeend">Add Questions</button>
-        
+        <br>
+        <table>
+            {% comment %} ?
+            *   btn to add another question, adds the form from par-question-form to end of the new-question-form div above
+            ?{% endcomment %}
+            <tr>
+                <td>
+                    <button class="btn btn-secondary" type="button" hx-get="{% url 'survey:question-create' parent_slug=survey_obj.slug %}"
+                    hx-target="#new-question-form" hx-swap="beforeend">Add Questions</button>
+                </td>
 
-        <!-- the hx-indicator on the form, will add htmx-request to the #save-btn
-         a btn that is inside a save-btn, will be shown normally
-         a indicator inside a save-btn is hidden normally
-         but when save-btn also has htmx-request, the btn will be dimmed, and indicator is shown -->
-        <div id="save-btn">
-            <button class="btn btn-primary" type="submit">Save</button>
-            <span class="indicator" style="font-size: larger; color: brown;">progressing</span>
-        </div>
+                {% comment %} ?
+                *    - the hx-indicator on the form, will add htmx-request to the #save-btn container's class (class="htmx-request")
+                *    - when it is not there:
+                *       * the save button is shown normally
+                *       * the indicator is hidden
+                *    - when it is there (when the htmx is trying to save the form and #save-btn has the htmx-request):
+                *       * the save button is dimmed and unclickable
+                *       * the indicator shown
+                *    - this avoids submitting multiple times, and their behaviour is set in <styles>
+                ?{% endcomment %}
+                <td>
+                    <div id="save-btn">
+                        <button class="btn btn-primary" type="submit">Save</button>
+                        <span class="indicator" style="font-size: larger; color: blue;">Progressing ...</span>
+                    </div>
+                </td>
+            </tr>
+        </table>
     
         
     </form>

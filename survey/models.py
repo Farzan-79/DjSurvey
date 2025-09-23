@@ -20,7 +20,7 @@ class Survey(models.Model):
     def get_absolute_url(self):
         return reverse('survey:detail', kwargs={'slug': self.slug})
     
-    def get_edit_url(self):
+    def get_update_url(self):
         return reverse('survey:edit', kwargs={'slug': self.slug})
     
     def get_delete_url(self):
@@ -37,7 +37,7 @@ class Question(models.Model):
     def get_absolute_url(self):
         return reverse('survey:question-detail', kwargs={'id': self.id, 'parent_slug': self.survey.slug})
 
-    def get_edit_url(self):
+    def get_update_url(self):
         return reverse('survey:question-update', kwargs={'id': self.id, 'parent_slug': self.survey.slug})
     
     def get_delete_url(self):

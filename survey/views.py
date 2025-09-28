@@ -2,7 +2,7 @@ from django.shortcuts import render, redirect, get_object_or_404, HttpResponse
 from django.urls import reverse
 from django.http import Http404
 from django.db import transaction
-from .forms import SurveyCreationForm, QuestionForm, SurveyTitleForm, ChoiceForm, ChoiceFormSet
+from .forms import SurveyCreationForm, QuestionForm, SurveyTitleForm, ChoiceForm, ChoiceFormSetCreate, ChoiceFormSetUpdate
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from .models import Survey, Question, Answer, Choice
@@ -142,15 +142,18 @@ def question_create_view(request, parent_slug=None):
     prefix = request.POST.get('prefix') or generate_temp_prefix()
 
     #* The question_form doesn't have an instance because this is creation.
-    question_form = QuestionForm(request.POST or None)
+    #* uid is passed so the form fields have unique IDs... more details in forms.py
+    question_form = QuestionForm(request.POST or None, uid=prefix)
+    
     #* Provide prefix even on GET so we render inputs with stable names (choice-<something>-0-title)
-    choice_formset = ChoiceFormSet(request.POST or None, instance=None, prefix=prefix)
+    choice_formset = ChoiceFormSetCreate(request.POST or None, instance=None, prefix=prefix)
 
     context = {
         'question_form': question_form,
         'choice_formset': choice_formset,
         'survey_obj': parent_survey,
-        'prefix': prefix
+        'prefix': prefix,
+        'create': True
     }
 
     if question_form.is_valid():
@@ -165,7 +168,7 @@ def question_create_view(request, parent_slug=None):
                     choice_formset.instance = question
                     choice_formset.save()
                 #* On success return the rendered question partial (display mode)
-                return render(request, 'survey/create/par-question.html', {'question_obj':question})
+                return render(request, 'survey/create/par-question.html', {'question_obj':question, 'create':True})
             #* If choices invalid, re-render the question form partial with the same prefix (so user input isn't lost)
             return render(request, 'survey/create/par-question-form.html', context=context)
         else:
@@ -173,7 +176,7 @@ def question_create_view(request, parent_slug=None):
             question = question_form.save(commit=False)
             question.survey = parent_survey
             question.save()
-            return render(request, 'survey/create/par-question.html', {'question_obj':question})
+            return render(request, 'survey/create/par-question.html', {'question_obj':question, 'create':True})
     #* initial GET or invalid form: render the question form partial (with prefix)
     return render(request, 'survey/create/par-question-form.html', context=context)
 
@@ -198,7 +201,7 @@ def question_update_view(request, parent_slug=None, id=None):
 
     #* Bind POST to the forms so they can validate/save
     question_form = QuestionForm(request.POST or None, instance= instance)
-    choice_formset = ChoiceFormSet(request.POST or None, instance= instance, prefix=prefix)
+    choice_formset = ChoiceFormSetUpdate(request.POST or None, instance= instance, prefix=prefix)
 
     context = {
         'question_form': question_form,
@@ -305,14 +308,26 @@ def choice_area_view(request, parent_slug=None):
                     current_total = 0
                 new_total = current_total+1
                 data[total_key] = str(new_total)
-                #* construct formset bound to mutated data so template shows one more blank form
-                choice_formset = ChoiceFormSet(data, instance=question_obj, prefix=prefix)
+                #* the method is post
+                #* and add is true, so we construct a Update formset, we dont need create which has the 2 extras
+                #* the constructed formset is bound to mutated data (one more choice form) so template shows one more blank form
+                choice_formset = ChoiceFormSetUpdate(data, instance=question_obj, prefix=prefix)
+                #* IMPORTANT: when user only requests to "add" a blank form, we don't want MIN_CHOICES
+                #* validation to trigger — the user is mid-edit. Set a flag the formset.clean() reads.
+                choice_formset.skip_min = True
             else:
                 #* No special action: render formset for the question (bound to POST if present)
-                choice_formset = ChoiceFormSet(instance=question_obj, prefix=prefix)
+                if question_obj and question_obj.question_type == 'multiple_choice':
+                    #* meaning the question was there before, and was multiple choice before
+                    #* so the min question are already there, and we dont need extras
+                    choice_formset = ChoiceFormSetUpdate(instance=question_obj, prefix=prefix)
+                else:
+                    #* meaning the question is being created, or was text and is being changed to multiple choice
+                    #* so we do need the extras
+                    choice_formset = ChoiceFormSetCreate(prefix=prefix)
         else:
             #* GET: return unbound formset for question or empty formset (if question_obj is None)
-            choice_formset = ChoiceFormSet(instance=question_obj, prefix=prefix)
+            choice_formset = ChoiceFormSetCreate(instance=question_obj, prefix=prefix)
     
     else:
         #* Not multiple_choice -> nothing to render in choice area

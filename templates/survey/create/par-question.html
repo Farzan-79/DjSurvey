@@ -7,7 +7,11 @@
 *   - Each question block has a unique DOM id (#q-<id>) — HTMX targets that id for swaps.
 ?   -------------------------------------------------------------------   {% endcomment %}
 
-<div id="q-{{question_obj.id}}">
+{% if create %}
+    <div id="q-{{question_obj.id}}">
+{% endif %}
+    
+
 
 <h4>{{ question_obj.title }}<span style="font-size: x-small; color: yellowgreen;">{{ question_obj.question_type }}</span></h4>
 
@@ -31,6 +35,11 @@ hx-trigger="click">DELETE</button>
 
 <div id="q-{{question_obj.id}}-delete-field"></div>
 
-</div>
+
+{% if create %}
+    </div>
+{% endif %}
+    
+
 
     

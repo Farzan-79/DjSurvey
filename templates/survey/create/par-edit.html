@@ -59,7 +59,9 @@
         *     by clicking edit or delete.
         ?{% endcomment %}
         {% for question in survey_obj.questions.all %}
+            <div id="q-{{question.id}}">
             {% include 'survey/create/par-question.html' with question_obj=question %}
+            </div>
         {% endfor %}
 
         {% comment %} ?

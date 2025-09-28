@@ -12,6 +12,18 @@
 <br>
 {{choice_formset.management_form}}
 
+{% comment %} ?
+* non "form" errors, not relating to any single form in the formset. non_field_errors should be foe each form
+? {% endcomment %}
+{% if choice_formset.non_form_errors %}
+  <div class="alert alert-danger">
+    {% for err in choice_formset.non_form_errors %}
+      <div>{{ err }}</div>
+    {% endfor %}
+  </div>
+{% endif %}
+
+
 <table class="table">
     <tr><h5>Choices:<h5><tr>
     {% for form in choice_formset %}
@@ -20,12 +32,20 @@
                 {% for hidden in form.hidden_fields %}
                     {{ hidden }}
                 {% endfor %}
-
+                
                 {{form.title}}
+                {% if form.title.errors %}  
+                    {% for err in form.title.errors %}
+                        <div class="alert alert-danger">{{err}}</div>
+                    {% endfor %}
+                {% endif %}
 
+                {% comment %} ?
+                * non field errors for each form
+                ? {% endcomment %}
                 {% if form.non_field_errors %}
                     {% for err in form.non_field_errors %}
-                    <div class="text-danger">{{ form.non_field_errors }}</div>
+                    <div class="alert alert-danger">{{ err }}</div>
                     {% endfor %}
                 {% endif %}
             </td>

@@ -20,7 +20,7 @@
 hx-post="{% if question_obj %} {{question_obj.get_update_url}} {% else %} {% url 'survey:question-create' parent_slug=survey_obj.slug %} {% endif %}"
 id="{% if question_obj %} edit-form-{{question_obj.id}} {% else %} new-question-form {% endif %}"
 hx-target="{% if question_obj %} #q-{{question_obj.id}} {% else %}this{% endif %}" 
-hx-swap="{% if question_obj %} outerHTML {% else %} outerHTML {% endif %}">{% csrf_token %}
+hx-swap="{% if question_obj %} innerHTML {% else %} outerHTML {% endif %}">{% csrf_token %}
 
     {% comment %} ?
     *   Hidden input 'prefix' is CRITICAL:
@@ -34,12 +34,18 @@ hx-swap="{% if question_obj %} outerHTML {% else %} outerHTML {% endif %}">{% cs
         <input type="hidden" name="id" value="{{ question_obj.id }}">
     {% endif %}
 
+    {% if question_form.non_field_errors %}
+        <div class="text-danger">{{ question_form.non_field_errors }}</div>
+    {% endif %}
+
+
     <!-- #region title field -->
         {{ question_form.title.label_tag }}
         {{ question_form.title }}
         {% if question_form.title.errors %}
             <div class="text-danger">{{ question_form.title.errors }}</div>
         {% endif %}
+        
     <!-- #endregion -->
 
     <!-- #region select type field -->
@@ -85,10 +91,20 @@ hx-swap="{% if question_obj %} outerHTML {% else %} outerHTML {% endif %}">{% cs
 *       - Server renders a choice_formset here on the initial render if the question_type is multiple_choice,
 *           because only "+ add button" and changing the question_type will send a request to choice_area_view
 *           and when first clicking edit on an existing form, there is no request. so we must include it 
+*
+*       - question_form.question_type.value use case:
+*           when there is an error for choice formset in CREATION, the response does not have question_obj,
+*           so there is no question_type, the choice_area_view just found it from the unsaved form, so when
+*           an error happens, the choice area won't load to show the error. we need this new context to tell it
+*           needs to load it because there are choices but there was an error!
+*
+*       - NOTE:
+*           this only is checked when this page is loaded through update or create view. when changing the type,
+*           the choice_area_view does the work and these conditions wont be checked!
     ? {% endcomment %}
 
     <div id="choice-area-{{ prefix }}">
-        {% if question_obj.question_type == 'multiple_choice' %}
+        {% if question_obj and question_obj.question_type == 'multiple_choice' or question_form.question_type.value == 'multiple_choice' %}
             {% include 'survey/create/par-choice-area.html' %}
         {% endif %}
     </div>
@@ -103,7 +119,7 @@ hx-swap="{% if question_obj %} outerHTML {% else %} outerHTML {% endif %}">{% cs
         ? {% endcomment %}
         <button type="button" class="btn btn-outline-secondary"
                 {% if question_obj %}
-                   hx-get="{{ question_obj.get_absolute_url }}" hx-target="#q-{{ question_obj.id }}" hx-swap="outerHTML"
+                   hx-get="{{ question_obj.get_absolute_url }}" hx-target="#q-{{ question_obj.id }}" hx-swap="innerHTML"
                 {% else %}
                    hx-get="" hx-target="closest form" hx-swap="delete"
                 {% endif %}>Cancel</button>
